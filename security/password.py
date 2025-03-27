@@ -1,8 +1,5 @@
-from passlib.context import CryptContext
+from passlib.hash import bcrypt
 
-
-# Initialize hashing context with bcrypt algorithm
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
     """
@@ -17,7 +14,8 @@ def hash_password(password: str) -> str:
     :return: A securely hashed representation of the input password.
     :rtype: str
     """
-    return pwd_context.hash(password)
+    return bcrypt.hash(password)
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
@@ -32,4 +30,4 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         otherwise, False.
     :rtype: bool
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.verify(plain_password, hashed_password)
