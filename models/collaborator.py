@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from .base import Base
 
@@ -10,7 +10,8 @@ class Collaborator(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    role = Column(String, nullable=False) # exemple : 'commercial', 'support', 'management'
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
+    role = relationship("Role", back_populates="collaborators")
 
     clients = relationship("Client", back_populates="commercial") # 'commercial'
     contracts = relationship("Contract", back_populates="commercial") # 'commercial'

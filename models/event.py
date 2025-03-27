@@ -10,7 +10,7 @@ class Event(Base):
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     location = Column(String)
-    Attendees = Column(Integer)
+    attendees = Column(Integer)
     note = Column(Text)
 
     contract_id = Column(Integer, ForeignKey("contracts.id"))
