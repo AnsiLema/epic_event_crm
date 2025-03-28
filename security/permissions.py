@@ -76,6 +76,13 @@ def can_manage_events(payload: dict) -> bool:
     :return: True if the user possesses the required permissions, False otherwise.
     :rtype: bool
     """
+    if not isinstance(payload, dict):
+        raise TypeError("Payload must be a dictionary.")
+
+    role = payload.get("role")
+    if role is None:
+        return False
+
     return has_permission(payload, ["gestion", "support"])
 
 def can_manage_own_clients(payload: dict) -> bool:
