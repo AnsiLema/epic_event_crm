@@ -67,3 +67,28 @@ def update_collaborator(
     db.refresh(collaborator)
     print("Collaborateur mis à jour avec succès.")
     return collaborator
+
+def delete_collaborator(
+        db: Session,
+        payload: dict,
+        collaborator_id: int
+) -> bool:
+    """
+    Delete an existing collaborator from the database. This operation removes
+    the collaborator's record associated with the given `collaborator_id`
+    and processes any additional information provided in the `payload` to
+    handle deletion constraints or any related tasks.
+    """
+    if not can_manage_collaborators(payload):
+        print("Permission refusée : Seuls les gestionnaires ont le droit de supprimer les collaborateurs.")
+        return False
+
+    collaborator = db.query(Collaborator).filter_by(id=collaborator_id).first()
+    if not collaborator:
+        print("Collaborateur introuvable.")
+        return False
+
+    db.delete(collaborator)
+    db.commit()
+    print(f"Collaborateur #{collaborator_id} supprimé.")
+    return True
