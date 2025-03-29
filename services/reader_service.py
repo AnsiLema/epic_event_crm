@@ -46,10 +46,17 @@ def get_clients_by_commercial(db: Session, commercial_email: str):
     return db.query(Client).join(Collaborator).filter(Collaborator.email == commercial_email).all()
 
 def get_contracts_not_signed(db: Session):
+    """
+    Fetches all contracts that have not been signed yet from the database.
+
+    This function queries the `Contract` records in the database where the
+    `status` field is set to `False`, indicating that the contract has not
+    been signed. It retrieves all such records and returns them as a list.
+    """
     return db.query(Contract).filter_by(status=False).all()
 
 def get_contracts_not_fully_paid(db: Session):
-    return db.query(Contract).filter_by(Contract.amount_left > 0).all()
+    return db.query(Contract).filter(Contract.amount_left > 0, Contract.status == True).all()
 
 def get_events_without_support(db: Session):
     return db.query(Event).filter_by(support_id=None).all()
