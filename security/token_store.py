@@ -1,18 +1,17 @@
-import os
 from pathlib import Path
 
-TOKEN_FILE = Path.home() / ".epicevents_token"
+DEFAULT_TOKEN_FILE = Path.home() / ".epicevents_token"
 
-def save_token(token: str):
-    with open(TOKEN_FILE, "w") as f:
+def save_token(token: str, path: Path = DEFAULT_TOKEN_FILE):
+    with open(path, "w") as f:
         f.write(token)
 
-def load_token() -> str | None:
-    if not os.path.exists(TOKEN_FILE):
+def load_token(path: Path = DEFAULT_TOKEN_FILE) -> str | None:
+    if not path.exists():
         return None
-    with open(TOKEN_FILE, "r") as f:
+    with open(path, "r") as f:
         return f.read()
 
-def delete_token():
-    if TOKEN_FILE.exists():
-        TOKEN_FILE.unlink()
+def delete_token(path: Path = DEFAULT_TOKEN_FILE):
+    if path.exists():
+        path.unlink()
