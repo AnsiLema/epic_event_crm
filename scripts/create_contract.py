@@ -24,10 +24,11 @@ new_contract = create_contract(
     total_amount=5000.00,
     amount_left=2500.00,
     is_signed=False,
-    commercial_id=1
+    commercial_id=4
 )
 
 if new_contract:
-    print(f"Contrat #{new_contract.id} créé pour le client #{new_contract.client_id},"
+    print(f"Contrat #{new_contract.id} créé pour le client {new_contract.client.name}"
+          f" de {new_contract.client.company},"
           f" avec {new_contract.commercial.name}.")
 session.close()

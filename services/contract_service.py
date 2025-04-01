@@ -4,6 +4,7 @@ from datetime import date
 from models.contract import Contract
 from models.collaborator import Collaborator
 from models.client import Client
+from typing import Literal
 
 
 def create_contract(
@@ -159,3 +160,50 @@ def update_contract(
     db.refresh(contract)
     print("Contrat mis à jour.")
     return contract
+
+def filter_contracts(
+        db: Session,
+        payload: dict,
+        filter_by: Literal["unsigned", "unpaid"]
+) -> list[Contract]:
+    """
+    Filters contracts based on the given criteria.
+
+    This function retrieves a list of contracts from the database that match
+    the specified filter criteria. The filtering is performed based on the
+    `filter_by` parameter, which defines whether to retrieve contracts
+    that are unsigned or unpaid. The filtering process uses the provided
+    `payload` for additional constraints or conditions.
+
+    :param db: Database session used to query for contracts.
+    :type db: Session
+    :param payload: Dictionary containing additional filtering constraints.
+    :type payload: dict
+    :param filter_by: Criteria for filtering contracts, either "unsigned"
+        or "Unpaid".
+    :type filter_by: Literal["unsigned", "Unpaid"]
+    :return: A list of contracts that match the specified filter criteria.
+    :rtype: List[Contract]
+    """
+
+    if payload["role"] not in ["commercial", "gestion"]:
+        print("Vous n'avez pas le droit de filter les contrats.")
+        return []
+
+    current_user = db.query(Collaborator).filter_by(email=payload["sub"]).first()
+    if not current_user:
+        print("Utilisateur introuvable.")
+        return []
+
+    query = db.query(Contract)
+
+    if filter_by == "unsigned":
+        query = query.filter(Contract.status == False)
+    elif filter_by == "unpaid":
+        query = query.filter(Contract.amount_left > 0)
+
+    if payload["role"] == "commercial":
+        query = query.join(Contract.client).filter(Contract.client.has(commercial_id=current_user.id))
+        return query.all()
+
+    return query.all()

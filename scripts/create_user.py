@@ -13,10 +13,10 @@ db.commit()
 # Créer un collaborateur
 user = create_collaborator(
     db=db,
-    name="Alice Martin",
-    email="alice@epicevents.fr",
+    name="Gilbert Commercial",
+    email="gilbert@epicevents.fr",
     password="supersecure123",
-    role_name="support"
+    role_name="commercial"
 )
 
 if user:
