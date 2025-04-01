@@ -1,35 +1,46 @@
 import pytest
-from passlib.hash import bcrypt
-from security.password import verify_password
+import time
+from datetime import timedelta, datetime
+from unittest.mock import patch
+from jwt import ExpiredSignatureError, InvalidTokenError
 
 
-def test_verify_password_correct_match():
-    plain_password = "correct_password"
-    hashed_password = bcrypt.hash(plain_password)
-    assert verify_password(plain_password, hashed_password) is True
+from security.jwt import create_access_token, decode_access_token
 
+@pytest.fixture
+def sample_payload():
+    return {"sub": "test_user", "role": "admin"}
 
-def test_verify_password_incorrect_match():
-    plain_password = "correct_password"
-    hashed_password = bcrypt.hash(plain_password)
-    assert verify_password("wrong_password", hashed_password) is False
+def test_create_access_token_default_exp(sample_payload):
+    token = create_access_token(data=sample_payload)
+    assert isinstance(token, str), "Le token doit être une chaîne de caractères"
 
+def test_create_access_token_custom_exp(sample_payload):
+    expires_in = timedelta(minutes=60)  # expires in 60 minutes
+    token = create_access_token(data=sample_payload, expires_delta=expires_in)
+    assert isinstance(token, str)
 
-def test_verify_password_empty_plain_password():
-    plain_password = ""
-    hashed_password = bcrypt.hash("some_password")
-    assert verify_password(plain_password, hashed_password) is False
+def test_decode_access_token_valid(sample_payload):
+    token = create_access_token(data=sample_payload)
+    decoded = decode_access_token(token)
+    assert decoded is not None, "Le token valide ne doit pas être None"
+    for k, v in sample_payload.items():
+        assert decoded[k] == v
 
+def test_decode_access_token_expired(sample_payload, capsys):
+    token = create_access_token(data=sample_payload, expires_delta=timedelta(seconds=-1))
 
-def test_verify_password_empty_hashed_password():
-    plain_password = "some_password"
-    hashed_password = ""
-    with pytest.raises(ValueError):
-        verify_password(plain_password, hashed_password)
+    decoded = decode_access_token(token)
+    captured = capsys.readouterr()
 
+    assert decoded is None
+    assert "Le token a expiré." in captured.out
 
-def test_verify_password_invalid_hash_format():
-    plain_password = "password"
-    hashed_password = "not_a_valid_hash"
-    with pytest.raises(ValueError):
-        verify_password(plain_password, hashed_password)
+def test_decode_access_token_invalid(capsys):
+    invalid_token = "xxx.yyy.zzz"
+
+    decoded = decode_access_token(invalid_token)
+    captured = capsys.readouterr()
+
+    assert decoded is None
+    assert "Token invalide." in captured.out

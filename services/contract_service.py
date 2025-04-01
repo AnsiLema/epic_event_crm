@@ -121,7 +121,7 @@ def update_contract(
     authorized = False
     if payload["role"] == "gestion":
         authorized = True
-    elif payload["role"] == "commercial" and current_user.id == contract.commercial_id:
+    elif payload["role"] == "commercial" and contract.client and contract.client.commercial_id == current_user.id:
         authorized = True
 
     if not authorized:

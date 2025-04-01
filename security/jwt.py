@@ -1,6 +1,6 @@
 import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
 
@@ -17,7 +17,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     remains secure. Tokens without an expiration time will not have a limited lifespan.
     """
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
