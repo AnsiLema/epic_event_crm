@@ -30,15 +30,11 @@ def sample_contracts():
         Contract(id=3, status=True, amount_left=0),    # payé & signé
     ]
 
-# ------------------------------
-# ✅ Test gestion - unsigned
-# ------------------------------
+
 def test_gestion_filters_unsigned_contracts(db_session, gestion_payload, sample_contracts):
-    # Mock pour le collaborateur
     mock_query_user = MagicMock()
     mock_query_user.filter_by.return_value.first.return_value = Collaborator(email="admin@example.com")
 
-    # Mock pour les contrats
     mock_query_contracts = MagicMock()
     mock_query_contracts.filter.return_value.all.return_value = [sample_contracts[0]]
 
@@ -51,15 +47,12 @@ def test_gestion_filters_unsigned_contracts(db_session, gestion_payload, sample_
     assert result[0].id == 1
     assert result[0].status is False
 
-# ------------------------------
-# ✅ Test gestion - unpaid
-# ------------------------------
 def test_gestion_filters_unpaid_contracts(db_session, gestion_payload, sample_contracts):
-    # Mock pour le collaborateur
+    # Mock collaborator
     mock_query_user = MagicMock()
     mock_query_user.filter_by.return_value.first.return_value = Collaborator(email="admin@example.com")
 
-    # Mock pour les contrats
+    # Mock contract
     mock_query_contracts = MagicMock()
     mock_query_contracts.filter.return_value.all.return_value = [sample_contracts[1]]
 
@@ -77,18 +70,15 @@ def test_commercial_filters_unpaid_contracts_of_their_clients(db_session, commer
     client = Client(id=1, commercial_id=commercial_user.id)
     contract.client = client
 
-    # 1. Mock pour l'utilisateur
     mock_query_user = MagicMock()
     mock_query_user.filter_by.return_value.first.return_value = commercial_user
 
-    # 2. Mock pour la requête Contract avec bon ordre d'appels : filter() → join() → filter() → all()
     mock_query_contracts = MagicMock()
     mock_after_filter = mock_query_contracts.filter.return_value
     mock_after_join = mock_after_filter.join.return_value
     mock_after_second_filter = mock_after_join.filter.return_value
     mock_after_second_filter.all.return_value = [contract]
 
-    # 3. Injecte le side_effect dans db.query
     db_session.query.side_effect = [mock_query_user, mock_query_contracts]
 
     result = filter_contracts(db_session, commercial_payload, filter_by="unpaid")
@@ -98,9 +88,6 @@ def test_commercial_filters_unpaid_contracts_of_their_clients(db_session, commer
     assert result[0].id == 5
     assert result[0].client.commercial_id == commercial_user.id
 
-# ------------------------------
-# ❌ Rôle non autorisé
-# ------------------------------
 def test_unauthorized_role_cannot_filter_contracts(db_session):
     payload = {"role": "support", "sub": "support@example.com"}
 
@@ -109,9 +96,6 @@ def test_unauthorized_role_cannot_filter_contracts(db_session):
     assert isinstance(result, list)
     assert result == []
 
-# ------------------------------
-# ❌ Utilisateur inconnu
-# ------------------------------
 def test_unknown_user_returns_empty_list(db_session):
     mock_query_user = MagicMock()
     mock_query_user.filter_by.return_value.first.return_value = None

@@ -109,3 +109,5 @@ def can_manage_own_clients(payload: dict) -> bool:
 
     return has_permission(payload, ["commercial"])
 
+def is_commercial(payload: dict) -> bool:
+    return payload.get("role") == "commercial"
