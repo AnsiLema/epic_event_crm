@@ -1,6 +1,6 @@
 from db.session import SessionLocal
 from security.token_store import save_token
-from services.auth_service import authenticate_collaborator
+from security.auth_service import authenticate_collaborator
 from security.jwt import create_access_token
 
 session = SessionLocal()

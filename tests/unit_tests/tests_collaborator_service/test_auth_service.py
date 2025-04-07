@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from models.collaborator import Collaborator
-from services.auth_service import authenticate_collaborator
+from security.auth_service import authenticate_collaborator
 from sqlalchemy.orm import Session
 
 
