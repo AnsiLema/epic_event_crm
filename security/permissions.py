@@ -11,7 +11,7 @@ def has_permission(payload: dict, allowed_role: list[str]) -> bool:
     :return: A boolean value indicating if the user has the required permission.
     """
     if not isinstance(payload, dict):
-        raise TypeError("Payload must be a dictionary.")
+        raise TypeError("Payload doit être un dictionnaire.")
 
     user_role = payload.get("role")
     if user_role is None:
@@ -34,7 +34,7 @@ def can_manage_collaborators(payload: dict) -> bool:
     :rtype: bool
     """
     if not isinstance(payload, dict):
-        raise TypeError("Payload must be a dictionary.")
+        raise TypeError("Payload doit être un dictionnaire.")
 
     role = payload.get("role")
     if role is None:
@@ -54,7 +54,7 @@ def can_manage_contracts(payload: dict) -> bool:
     :rtype: bool
     """
     if not isinstance(payload, dict):
-        raise TypeError("Payload must be a dictionary.")
+        raise TypeError("Payload doit être un dictionnaire.")
 
     role = payload.get("role")
     if role is None:
@@ -77,7 +77,7 @@ def can_manage_events(payload: dict) -> bool:
     :rtype: bool
     """
     if not isinstance(payload, dict):
-        raise TypeError("Payload must be a dictionary.")
+        raise TypeError("Payload doit être un dictionnaire.")
 
     role = payload.get("role")
     if role is None:
@@ -101,7 +101,7 @@ def can_manage_own_clients(payload: dict) -> bool:
     :rtype: bool
     """
     if not isinstance(payload, dict):
-        raise TypeError("Payload must be a dictionary.")
+        raise TypeError("Payload doit être un dictionnaire.")
 
     role = payload.get("role")
     if role is None:
@@ -110,4 +110,39 @@ def can_manage_own_clients(payload: dict) -> bool:
     return has_permission(payload, ["commercial"])
 
 def is_commercial(payload: dict) -> bool:
+    """
+    Determines whether the provided payload indicates a commercial role.
+
+    This function evaluates the `role` field within the given `payload` to
+    check if it is marked as "commercial". If the `role` key does not
+    exist, the function will return False.
+
+    :param payload: Dictionary containing the data to be evaluated. The key
+        `role` is expected to exist within the dictionary to determine
+        if the role is "commercial".
+    :return: Boolean value indicating whether the role in the payload is
+        "commercial".
+    """
+    if not isinstance(payload, dict):
+        raise TypeError("Le payload doit être un dictionnaire.")
     return payload.get("role") == "commercial"
+
+def is_support(payload: dict) -> bool:
+    """
+    Checks if the given payload signifies a support role.
+
+    This function evaluates the provided payload dictionary and
+    determines if the 'role' key within the dictionary is set
+    to 'support'. It is designed to work with structured data
+    where roles are specified as part of the payload.
+
+    :param payload: A dictionary containing a 'role' key which
+        specifies the type of role.
+    :type payload: dict
+    :return: Returns True if the 'role' in payload is 'support',
+        otherwise False.
+    :rtype: bool
+    """
+    if not isinstance(payload, dict):
+        raise TypeError("Le payload doit être un dictionnaire.")
+    return payload.get("role") == "support"

@@ -56,10 +56,48 @@ class RoleDAL:
         return self._to_dto(role) if role else None
 
     def get_by_name(self, name: str) -> RoleDTO | None:
+        """
+        Fetches a role by its name from the database.
+
+        This method queries the database for a role with the specified name, and if
+        found, converts the result into a corresponding RoleDTO object. If no role
+        is found, it returns None.
+
+        :param name: The name of the role to query.
+        :type name: str
+        :return: A RoleDTO object representing the queried role if found; otherwise, None.
+        :rtype: RoleDTO | None
+        """
         role = self.db.query(Role).filter_by(name=name).first()
         return self._to_dto(role) if role else None
 
+    def get_raw_by_name(self, name: str) -> Role | None:
+        """
+        Fetches a Role object from the database by its name.
+
+        This method queries the database for a role that matches the provided
+        name. If a matching role is found, it returns the corresponding Role
+        object. If no role matches the specified name, the method returns None.
+
+        :param name: The name of the role to be queried.
+        :type name: str
+        :return: The Role object matching the specified name, or None if not found.
+        :rtype: Role | None
+        """
+        return self.db.query(Role).filter_by(name=name).first()
+
     def create(self, name: str) -> RoleDTO:
+        """
+        Creates a new role with the specified name and persists it to the database. This
+        method initializes a `Role` object, adds it to the database session, commits the
+        transaction to save it, and refreshes the object instance. Finally, the role is
+        converted into a Data Transfer Object (DTO) for return.
+
+        :param name: The name of the role to be created.
+        :type name: str
+        :return: A `RoleDTO` object representing the newly created role.
+        :rtype: RoleDTO
+        """
         role = Role(name=name)
         self.db.add(role)
         self.db.commit()

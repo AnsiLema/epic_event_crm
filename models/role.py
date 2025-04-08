@@ -16,6 +16,3 @@ class Role(Base):
             name="check_role_name"
         ),
     )
-
-    def __repr__(self):
-        return f"<Role(name={self.name})>"

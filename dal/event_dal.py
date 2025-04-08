@@ -1,6 +1,4 @@
 from sqlalchemy.orm import Session
-
-from db.dummy_data import event
 from models.event import Event
 from dtos.event_dto import EventDTO
 
@@ -34,7 +32,7 @@ class EventDAL:
         self.db.refresh(event)
         return self._to_dto(event)
 
-    def update(self, event_id: int, updates: dict) -> EventDTO:
+    def update(self, event: Event, updates: dict) -> EventDTO:
         for key, value in updates.items():
             setattr(event, key, value)
         self.db.commit()
@@ -45,8 +43,16 @@ class EventDAL:
         event = self.db.query(Event).filter_by(id=event_id).first()
         if not event:
             return None
-        return self.update(event_id, updates)
+        return self.update(event, updates)
 
     def get_all(self) -> list[EventDTO]:
         events = self.db.query(Event).all()
+        return [self._to_dto(e) for e in events]
+
+    def get_without_support(self) -> list[EventDTO]:
+        events = self.db.query(Event).filter_by(support_id=None).all()
+        return [self._to_dto(e) for e in events]
+
+    def get_by_support_id(self, support_id: int) -> list[EventDTO]:
+        events = self.db.query(Event).filter_by(support_id=support_id).all()
         return [self._to_dto(e) for e in events]

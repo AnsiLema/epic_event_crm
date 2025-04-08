@@ -1,28 +1,31 @@
-from sqlalchemy.orm import Session
-from models.collaborator import Collaborator
+from dal.collaborator_dal import CollaboratorDAL
 from security.password import verify_password
 
-def authenticate_collaborator(
-        db: Session,
-        email: str,
-        password: str,
-) -> Collaborator | None:
+def authenticate_collaborator(db, email: str, password: str) -> dict | None:
     """
-    Checks email and password to authenticate collaborators.
-    Return the collaborator if valid, None otherwise.
+    Authenticates a collaborator by verifying the provided email and password.
+    If the credentials are valid, the collaborator's essential information is
+    returned as a dictionary.
+
+    :param db: Database session or connection object used for querying.
+    :type db: Any
+    :param email: The email address of the collaborator to authenticate.
+    :param password: The plain text password to verify against the stored hash.
+    :return: A dictionary containing the collaborator's `id`, `email`, and `role`
+        if authentication is successful, otherwise `None`.
+    :rtype: dict | None
     """
-    user = db.query(Collaborator).filter_by(email=email).first()
+    dal = CollaboratorDAL(db)
+    user = dal.get_by_email_raw(email)
 
     if not user:
         return None
 
-    if not verify_password(password, str(user.password)):
+    if not verify_password(password, user.password):
         return None
 
-    return user
-
-if __name__ == "__main__":
-    from db.session import SessionLocal
-    session = SessionLocal()
-    result = authenticate_collaborator(session, "alice@epicevents.fr", "supersecure123")
-    print(f"Utilisateur : {result.name} ({result.email}) - Rôle : {result.role.name}")
+    return {
+        "id": user.id,
+        "email": user.email,
+        "role": user.role.name
+    }
