@@ -25,6 +25,7 @@ def authenticate_collaborator(db, email: str, password: str) -> dict | None:
         return None
 
     return {
+        "id": user.id,
         "sub": user.email,
         "email": user.email,
         "role": user.role.name

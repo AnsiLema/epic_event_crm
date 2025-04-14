@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import current_user
-
 from dal.event_dal import EventDAL
 from dal.contract_dal import ContractDAL
 from dal.collaborator_dal import CollaboratorDAL

@@ -47,6 +47,22 @@ class ClientDAL:
             return None
         return self._to_dto(client)
 
+    def get_all(self) -> list[ClientDTO]:
+        """
+        Retrieves and returns all clients from the database as a list of ClientDTO objects.
+
+        This method queries the database to fetch all client records, converts them
+        into ClientDTO objects, and returns the resulting list. It uses the `_to_dto`
+        helper method to perform the transformation from the database entity to
+        the DTO (Data Transfer Object) representation. Clients not matching the DTO
+        transformation logic are not included in the result.
+
+        :return: A list of ClientDTO objects representing the clients in the database.
+        :rtype: list[ClientDTO]
+        """
+        clients = self.db.query(Client).all()
+        return [self._to_dto(client) for client in clients]
+
     def create(self, data: dict) -> ClientDTO:
         """
         Creates a new client record in the database and returns its Data Transfer Object (DTO)

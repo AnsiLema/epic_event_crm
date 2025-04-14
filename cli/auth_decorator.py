@@ -14,8 +14,6 @@ def with_auth_payload(f):
         if not payload:
             raise click.ClickException("Token invalide ou expiré.")
 
-        print("Payload actuel :", payload) # DEBUG temporaire
-
         return f(*args, current_user=payload, **kwargs)
 
     return wrapper

@@ -29,6 +29,7 @@ class ContractDAL:
         self.db.add(contract)
         self.db.commit()
         self.db.refresh(contract)
+        return self._to_dto(contract)
 
     def update(self, contract_id: int, updates: dict) -> ContractDTO:
         contract = self.db.query(Contract).filter_by(id=contract_id).first()

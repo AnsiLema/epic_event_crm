@@ -1,5 +1,4 @@
-from sqlite3 import IntegrityError
-
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from dal.client_dal import ClientDAL
 from dal.collaborator_dal import CollaboratorDAL
@@ -79,6 +78,41 @@ class ClientBLL:
             raise PermissionError("Vous ne pouvez modifier que vos propres clients.")
 
         return self.dal.update_by_id(client_id, updates)
+
+    def update_client_from_input(self, client_id: int,
+                                 name: str | None,
+                                 email: str | None,
+                                 phone: str | None,
+                                 company: str | None,
+                                 current_user: dict) -> ClientDTO:
+        if not is_commercial(current_user):
+            raise PermissionError("Seuls les commerciaux peuvent modifier un client")
+
+        current_collab = self.collaborator_dal.get_by_email_raw(current_user["sub"])
+        if not current_collab:
+            raise ValueError("collaborateur introuvable")
+
+        client = self.dal.get(client_id)
+        if not client:
+            raise ValueError("client introuvable")
+
+        if client.commercial_id != current_collab.id:
+            raise PermissionError("Vous ne pouvez modifier que vos propres clients.")
+
+        updates = {}
+        if name:
+            updates["name"] = name
+        if email:
+            updates["email"] = email
+        if phone:
+            updates["phone"] = phone
+        if company:
+            updates["company"] = company
+
+        return self.dal.update_by_id(client_id, updates)
+
+    def get_all_clients(self) -> list[ClientDTO]:
+        return self.dal.get_all()
 
     def get_client(self, client_id: int) -> ClientDTO:
         client = self.dal.get(client_id)
