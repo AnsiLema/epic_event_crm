@@ -3,7 +3,6 @@ from sqlalchemy.exc import IntegrityError
 from dal.collaborator_dal import CollaboratorDAL
 from dal.role_dal import RoleDAL
 from security.permissions import can_manage_collaborators
-from security.password import hash_password
 from dtos.collaborator_dto import CollaboratorDTO
 
 

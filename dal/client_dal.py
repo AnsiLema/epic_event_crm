@@ -67,6 +67,10 @@ class ClientDAL:
         self.db.refresh(client)
         return self._to_dto(client)
 
+    def get_by_email(self, email: str) -> ClientDTO | None:
+        client = self.db.query(Client).filter_by(email=email).first()
+        return self._to_dto(client) if client else None
+
     def update(self, client: Client, updates: dict) -> ClientDTO:
         for key, value in updates.items():
             setattr(client, key, value)
