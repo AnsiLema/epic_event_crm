@@ -62,6 +62,24 @@ def list_contracts(signed, unsigned, full, current_user):
     except Exception as e:
         click.echo(f"Erreur : {e}")
 
+@contract_cli.command("unpaid")
+@with_auth_payload
+def list_unpaid_contracts(current_user):
+    """
+    Lists all unpaid contracts for the current user.
+
+    This function retrieves a list of contracts that are unpaid
+    for the currently authenticated user. The user information
+    is provided through the `current_user` parameter. Mainly used
+    in CLI environments where authenticated users need to manage
+    their contracts.
+
+    :param current_user: Represents the authenticated user making the
+        request and whose unpaid contracts will be listed.
+    :return: Returns a list of contracts that are currently unpaid
+        for the given user.
+    """
+
 @contract_cli.command("create")
 @click.option("--client-id", type=int,
               prompt="Entrez l'identifiant du client",
@@ -147,3 +165,36 @@ def update_contract(contract_id, current_user):
 
     except Exception as e:
         click.echo(f"Erreur pendant la mis à jour: {e}")
+
+@contract_cli.command("show")
+@click.argument("contract_id", type=int)
+@with_auth_payload
+def show_contract_detail(contract_id, current_user):
+    """
+    Displays the details of a specific contract.
+
+    This function retrieves and outputs detailed information about a contract
+    specified by its unique contract ID. User authentication is required
+    to access the contract details.
+
+    :param contract_id: The unique identifier for the contract.
+    :param current_user: The user currently authenticated and requesting
+        the contract details.
+    :return: None
+    """
+    db = Session()
+    bl = ContractBL(db)
+
+    try:
+        contract = bl.get_contract(contract_id)
+    except Exception as e:
+        click.echo(f"Erreur : {e}")
+        return
+
+    click.echo(f"Contrat #{contract.id} :")
+    click.echo(f" - Montant total   : {contract.total_amount}")
+    click.echo(f" - Montant restant : {contract.amount_left}")
+    click.echo(f" - Statut          : {'✅ Signé' if contract.status else '❌ Non signé'}")
+    click.echo(f"  - ID du client   : {contract.client_id}")
+    click.echo(f"  - ID du commercial : {contract.commercial_id}")
+

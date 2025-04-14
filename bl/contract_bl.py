@@ -34,11 +34,20 @@ class ContractBL:
             raise ValueError("Contrat introuvable.")
         return contract
 
-    def list_unsigned_contracts(self) -> list[ContractDTO]:
+    def list_unsigned_contracts(self, current_user: dict) -> list[ContractDTO]:
+        if not is_commercial(current_user):
+            raise PermissionError("Seuls les commerciaux peuvent filtrer les contrats.")
         return self.dal.filter_by_status(signed=False)
 
-    def list_signed_contracts(self) -> list[ContractDTO]:
+    def list_signed_contracts(self, current_user: dict) -> list[ContractDTO]:
+        if not is_commercial(current_user):
+            raise PermissionError("Seuls les commerciaux peuvent filtrer les contrats.")
         return self.dal.filter_by_status(signed=True)
+
+    def list_unpaid_contract(self, current_user: dict) -> list[ContractDTO]:
+        if not is_commercial(current_user):
+            raise PermissionError("Seuls les commerciaux peuvent filtrer les contrats.")
+        return [c for c in self.dal.get_all() if c.amount_left > 0]
 
     def list_all_contracts(self) -> list[ContractDTO]:
         return self.dal.get_all()
