@@ -8,8 +8,8 @@ from dtos.collaborator_dto import CollaboratorDTO
 
 class CollaboratorBL:
     def __init__(self, db: Session):
-        self.db = db
         self.dal = CollaboratorDAL(db)
+        self.role_dal = RoleDAL(db)
 
     def create_collaborator(self, data: dict, current_user: dict) -> CollaboratorDTO:
         if not can_manage_collaborators(current_user):
@@ -34,25 +34,33 @@ class CollaboratorBL:
         if self.dal.get_by_email_raw(email):
             raise ValueError("Un collaborateur avec cet email existe déjà.")
 
-        role_dal = RoleDAL(self.db)
-        role = role_dal.get_raw_by_name(role_name)
+        role = self.role_dal.get_raw_by_name(role_name)
         if not role:
             raise ValueError(f"Le role '{role_name}' n'existe pas.")
 
+
+        collaborator_data = {
+            "name": name,
+            "email": email,
+            "password": password,
+            "role_id": role.id
+        }
+
         try:
-            collaborator_data = {
-                "name": name,
-                "email": email,
-                "password": password,
-                "role_id": role.id
-            }
             return self.dal.create(collaborator_data)
         except IntegrityError:
-            self.db.rollback()
             raise ValueError("Erreur: Cet email est déjà utilisé.")
         except Exception as e:
-            self.db.rollback()
             raise ValueError(f"Une erreur inattendue est survenue : {e}")
+
+    def get_by_id(self, collaborator_id: int) -> CollaboratorDTO:
+        collab = self.dal.get_by_id(collaborator_id)
+        if not collab:
+            raise ValueError("collaborateur introuvable")
+        return collab
+
+    def get_all_collaborators(self) -> list[CollaboratorDTO]:
+        return self.dal.get_all()
 
     def update_collaborator(self, collaborator_id: int, updates: dict, current_user: dict) -> CollaboratorDTO:
         if not can_manage_collaborators(current_user):

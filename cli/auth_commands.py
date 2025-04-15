@@ -20,8 +20,8 @@ def require_auth() -> dict:
     return payload
 
 @auth_cli.command("login")
-@click.argument("email")
-@click.argument("password")
+@click.option("--email", prompt="Email", help="Votre adresse email")
+@click.option("--password", prompt=True, hide_input=True, confirmation_prompt=False, help="Mot de passe")
 def login(email, password):
     """
     Handles the login operation for the authentication system.

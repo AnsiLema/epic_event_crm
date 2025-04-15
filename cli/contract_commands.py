@@ -10,55 +10,65 @@ contract_cli = click.Group("contract")
 Session = sessionmaker(bind=engine)
 
 @contract_cli.command("list")
-@click.option("--signed", is_flag=True, help="Afficher uniquement les contrats signés")
-@click.option("--unsigned", is_flag=True, help="Afficher uniquement les contrats non signés")
 @click.option("--full", is_flag=True, help="Afficher plus de détails sur les contrats")
 @with_auth_payload
-def list_contracts(signed, unsigned, full, current_user):
+def list_contracts(full, current_user):
     """
-    Displays a list of contracts based on specific filters and options. The user can filter only
-    signed contracts, only unsigned contracts, or view all contracts. Additional detailed information
-    can be displayed based on the provided options. Ensures that two conflicting filters cannot
-    be applied simultaneously. Handles errors gracefully by displaying appropriate error messages.
+    List all contracts with optional detailed information.
 
-    :param signed: Flag to filter and display only signed contracts.
-    :type signed: bool
-    :param unsigned: Flag to filter and display only unsigned contracts.
-    :type unsigned: bool
-    :param full: Flag to display additional details for each contract.
-    :type full: bool
-    :param current_user: The current authenticated user making the request.
-    :return: Outputs a formatted list of contracts based on specified filter flags.
-    :rtype: None
+    This function fetches all contracts using the business logic layer, displaying their
+    basic details. If the `full` option is specified, additional details about the
+    contracts (client ID and commercial ID) are included. If no contracts are found,
+    an appropriate message is displayed.
+
+    :param bool full: Flag to indicate whether to show extended details of contracts.
+    :param current_user: The current user executing the command. Provided by the
+                         authentication middleware.
+    :return: None
     """
     db = Session()
     bl = ContractBL(db)
 
     try:
-        if signed and unsigned:
-            click.echo("Erreur : Vous ne pouvez pas utiliser les 2 filtres en même temps.")
-            return
-
-        if signed:
-            contracts = bl.list_signed_contracts()
-        elif unsigned:
-            contracts = bl.list_unsigned_contracts()
-        else:
-            contracts = bl.list_all_contracts()
-
+        contracts = bl.list_all_contracts()
         if not contracts:
             click.echo("Aucun contrat trouvé.")
             return
 
         for c in contracts:
-            status_label = "✓ Signé" if c.status else "ｘ Non signé"
+            status_label = "✅ Signé" if c.status else "❌ Non signé"
             base = f"Contrat #{c.id} | {status_label} | Montant : {c.total_amount}€ / restant : {c.amount_left}€"
 
             if full:
-                base += f" | ID du client : {c.client_id} | Id du commercial : {c.commercial_id} "
+                base += f" | ID du client : {c.client_id} | Id du commercial : {c.commercial_id}"
 
             click.echo(base)
 
+    except Exception as e:
+        click.echo(f"Erreur : {e}")
+
+@contract_cli.command("signed")
+@with_auth_payload
+def list_signed_contracts(current_user):
+    """
+    Lists all signed contracts for the authenticated user.
+
+    :param current_user: Represents the currently authenticated user; required argument.
+    :return: A list of signed contracts associated with the authenticated user.
+    """
+    db = Session()
+    bl = ContractBL(db)
+
+    try:
+        contracts = bl.list_signed_contracts(current_user)
+        if not contracts:
+            click.echo("Aucun contrat signé trouvé.")
+            return
+
+        click.echo(" Contrats signés :")
+        for c in contracts:
+            click.echo(f" - #{c.id} | {c.total_amount}€ / {c.amount_left} | Client : {c.client_id} |"
+                       f" Date de création : {c.creation_date}")
     except Exception as e:
         click.echo(f"Erreur : {e}")
 
@@ -79,6 +89,52 @@ def list_unpaid_contracts(current_user):
     :return: Returns a list of contracts that are currently unpaid
         for the given user.
     """
+    db = Session()
+    bl = ContractBL(db)
+
+    try:
+        contracts = bl.list_unpaid_contract(current_user)
+        if not contracts:
+            click.echo("Aucun contrat non payé trouvé.")
+            return
+
+        click.echo("Contrats non payés :")
+        for c in contracts:
+            click.echo(f" - #{c.id} | {c.total_amount}€ / restant : {c.amount_left}€ | Client : {c.client_id} |"
+                       f" Date de création : {c.creation_date}")
+    except Exception as e:
+        click.echo(f"Erreur : {e}")
+
+@contract_cli.command("unsigned")
+@with_auth_payload
+def list_unsigned_contracts(current_user):
+    """
+    Lists all unsigned contracts for the current user.
+
+    This function fetches and returns a list of contract details that the
+    current user has not yet signed. It utilizes authentication details
+    from the provided user context and processes the necessary data.
+
+    :param current_user: The authenticated user executing the command.
+    :type current_user: User
+    :return: A list of unsigned contracts associated with the current user.
+    :rtype: List[Contract]
+    """
+    db = Session()
+    bl = ContractBL(db)
+
+    try:
+        contracts = bl.list_unsigned_contracts(current_user)
+        if not contracts:
+            click.echo("Aucun contrat non signé trouvé.")
+            return
+
+        click.echo("Contrat non signé")
+        for c in contracts:
+            click.echo(f" - #{c.id} | {c.total_amount}€ / Restant : {c.amount_left} | Client : {c.client_id} |"
+                       f" Date de création : {c.creation_date}")
+    except Exception as e:
+        click.echo(f"Erreur : {e}")
 
 @contract_cli.command("create")
 @click.option("--client-id", type=int,
@@ -92,6 +148,22 @@ def list_unpaid_contracts(current_user):
 @with_auth_payload
 def create_contract(client_id, commercial_id, total_amount, amount_left, current_user):
     """
+    Creates a new contract for a client based on the provided details. This function integrates
+    user input and utilizes business logic to process and store the contract data in the database.
+    It also validates the provided inputs, and manages the creation date and status of the contract.
+    Outputs a confirmation message with the contract details upon successful creation.
+
+    :param client_id: The unique identifier of the client.
+    :type client_id: int
+    :param commercial_id: The unique identifier of the commercial agent.
+    :type commercial_id: int
+    :param total_amount: The total monetary value of the contract in euros.
+    :type total_amount: float
+    :param amount_left: The remaining amount left to be paid in euros.
+    :type amount_left: float
+    :param current_user: The current authenticated user executing the command.
+    :type current_user: object
+    :return: None
     """
     db = Session()
     bl = ContractBL(db)
