@@ -1,6 +1,8 @@
 from datetime import date
 from unittest.mock import MagicMock, patch
 import pytest
+from sqlalchemy.exc import IntegrityError
+
 from bl.client_bl import ClientBLL
 from dal.client_dal import ClientDAL
 from dal.collaborator_dal import CollaboratorDAL
@@ -133,3 +135,77 @@ def test_create_client_from_input_collaborator_not_found(client_bl_instance, col
             )
 
     collaborator_dal.get_by_email_raw.assert_called_once_with(mock_current_user["sub"])
+
+@pytest.fixture
+def client_bl():
+    fake_db = MagicMock()
+    bl = ClientBLL(fake_db)
+    bl.dal = MagicMock()
+    bl.collaborator_dal = MagicMock()
+    return bl
+
+
+@patch("bl.client_bl.is_commercial", return_value=False)
+def test_create_client_not_commercial(mock_perm, client_bl):
+    with pytest.raises(PermissionError, match="Seuls les commerciaux peuvent créer des clients"):
+        client_bl.create_client_from_input("Alice", "alice@example.com",
+                                           "0102030405", "ACorp", {"sub": "x"})
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_create_client_missing_name_or_email(mock_perm, client_bl):
+    with pytest.raises(ValueError, match="Le nom et l'email sont requis."):
+        client_bl.create_client_from_input("", "alice@example.com",
+                                           "0102030405", "ACorp", {"sub": "x"})
+
+    with pytest.raises(ValueError, match="Le nom et l'email sont requis."):
+        client_bl.create_client_from_input("Alice", "",
+                                           "0102030405", "ACorp", {"sub": "x"})
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_create_client_email_already_exists(mock_perm, client_bl):
+    client_bl.dal.get_by_email.return_value = MagicMock()
+    with pytest.raises(ValueError, match="Un client avec cet email existe déjà."):
+        client_bl.create_client_from_input("Alice", "alice@example.com",
+                                           "0102030405", "ACorp", {"sub": "x"})
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_create_client_collaborator_not_found(mock_perm, client_bl):
+    client_bl.dal.get_by_email.return_value = None
+    client_bl.collaborator_dal.get_by_email_raw.return_value = None
+
+    with pytest.raises(ValueError, match="collaborateur introuvable"):
+        client_bl.create_client_from_input("Alice", "alice@example.com",
+                                           "0102030405", "ACorp", {"sub": "x"})
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_create_client_integrity_error(mock_perm, client_bl):
+    # Arrange
+    client_bl.dal.get_by_email.return_value = None
+    fake_collab = MagicMock()
+    fake_collab.id = 42
+    client_bl.collaborator_dal.get_by_email_raw.return_value = fake_collab
+    client_bl.dal.create.side_effect = IntegrityError("INSERT", {}, Exception("duplicate"))
+
+    # Act + Assert
+    with pytest.raises(ValueError, match="Email client déja utilisé."):
+        client_bl.create_client_from_input("Alice", "alice@example.com",
+                                           "0102030405", "ACorp", {"sub": "x"})
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_create_client_unexpected_exception(mock_perm, client_bl):
+    # Arrange
+    client_bl.dal.get_by_email.return_value = None
+    fake_collab = MagicMock()
+    fake_collab.id = 42
+    client_bl.collaborator_dal.get_by_email_raw.return_value = fake_collab
+    client_bl.dal.create.side_effect = Exception("oops")
+
+    # Act + Assert
+    with pytest.raises(ValueError, match="Une erreur inattendue est survenue : oops"):
+        client_bl.create_client_from_input("Alice", "alice@example.com",
+                                           "0102030405", "ACorp", {"sub": "x"})

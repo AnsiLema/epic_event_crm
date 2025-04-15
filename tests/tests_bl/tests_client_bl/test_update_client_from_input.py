@@ -131,3 +131,85 @@ def test_update_client_from_input_not_own_client(
             company="Updated Company",
             current_user={"sub": "commercial@example.com", "role": "commercial"},
         )
+
+@pytest.fixture
+def client_bl():
+    fake_db = MagicMock()
+    bl = ClientBLL(fake_db)
+    bl.dal = MagicMock()
+    bl.collaborator_dal = MagicMock()
+    return bl
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_update_client_success(mock_is_commercial, client_bl):
+    current_user = {"sub": "com@ex.com", "role": "commercial"}
+    collaborator = MagicMock(id=1)
+    client = MagicMock(commercial_id=1)
+    client_bl.collaborator_dal.get_by_email_raw.return_value = collaborator
+    client_bl.dal.get.return_value = client
+
+    updated_dto = ClientDTO(
+        id=123,
+        name="New Name",
+        email="new@example.com",
+        phone="0123456789",
+        company="NewCorp",
+        commercial_id=1,
+        creation_date=client.creation_date,
+        last_contact_date=client.last_contact_date
+    )
+    client_bl.dal.update_by_id.return_value = updated_dto
+
+    result = client_bl.update_client_from_input(
+        client_id=123,
+        name="New Name",
+        email="new@example.com",
+        phone="0123456789",
+        company="NewCorp",
+        current_user=current_user
+    )
+
+    assert isinstance(result, ClientDTO)
+    assert result.name == "New Name"
+    assert result.email == "new@example.com"
+    assert result.company == "NewCorp"
+
+
+@patch("bl.client_bl.is_commercial", return_value=False)
+def test_update_client_permission_denied_for_role(mock_is_commercial, client_bl):
+    current_user = {"sub": "unauth@ex.com", "role": "support"}
+    with pytest.raises(PermissionError, match="Seuls les commerciaux peuvent modifier un client"):
+        client_bl.update_client_from_input(1, "Name", "email", "phone", "company", current_user)
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_update_client_collaborator_not_found(mock_is_commercial, client_bl):
+    current_user = {"sub": "com@ex.com"}
+    client_bl.collaborator_dal.get_by_email_raw.return_value = None
+
+    with pytest.raises(ValueError, match="collaborateur introuvable"):
+        client_bl.update_client_from_input(1, "Name", "email", "phone", "company", current_user)
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_update_client_not_found(mock_is_commercial, client_bl):
+    current_user = {"sub": "com@ex.com"}
+    collaborator = MagicMock(id=1)
+    client_bl.collaborator_dal.get_by_email_raw.return_value = collaborator
+    client_bl.dal.get.return_value = None
+
+    with pytest.raises(ValueError, match="client introuvable"):
+        client_bl.update_client_from_input(1, "Name", "email", "phone", "company", current_user)
+
+
+@patch("bl.client_bl.is_commercial", return_value=True)
+def test_update_client_not_owned(mock_is_commercial, client_bl):
+    current_user = {"sub": "com@ex.com"}
+    collaborator = MagicMock(id=1)
+    other_client = MagicMock(commercial_id=2)
+    client_bl.collaborator_dal.get_by_email_raw.return_value = collaborator
+    client_bl.dal.get.return_value = other_client
+
+    with pytest.raises(PermissionError, match="Vous ne pouvez modifier que vos propres clients."):
+        client_bl.update_client_from_input(1, "Name", "email", "phone", "company", current_user)
