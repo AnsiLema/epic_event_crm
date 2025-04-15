@@ -62,7 +62,7 @@ class ClientBLL:
         if not is_commercial(current_user):
             raise PermissionError("Seuls les commerciaux peuvent modifier un client")
 
-        commercial = self.collaborator_dal.get_by_email_raw(current_user["email"])
+        commercial = self.collaborator_dal.get_by_email_raw(current_user["sub"])
         if not commercial:
             raise ValueError("collaborateur introuvable")
 
