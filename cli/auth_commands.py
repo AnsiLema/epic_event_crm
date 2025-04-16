@@ -44,7 +44,11 @@ def login(email, password):
         return
 
     token = create_access_token(payload)
-    save_token(token)
+    try:
+        save_token(token)
+    except Exception as e:
+        click.echo(f"Erreur lors de l'enregistrement du token : {e},", err=True)
+        return
     click.echo(f"Connecté : {payload['email']} (rôle : {payload['role']})")
 
 @auth_cli.command("logout")
@@ -58,7 +62,10 @@ def logout():
 
     :return: None
     """
-    delete_token()
+    try:
+        delete_token()
+    except FileNotFoundError:
+        return
     click.echo("Déconnecté avec succès.")
 
 @auth_cli.command("whoami")
