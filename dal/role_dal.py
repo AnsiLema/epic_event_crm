@@ -71,21 +71,6 @@ class RoleDAL:
         role = self.db.query(Role).filter_by(name=name).first()
         return self._to_dto(role) if role else None
 
-    def get_raw_by_name(self, name: str) -> Role | None:
-        """
-        Fetches a Role object from the database by its name.
-
-        This method queries the database for a role that matches the provided
-        name. If a matching role is found, it returns the corresponding Role
-        object. If no role matches the specified name, the method returns None.
-
-        :param name: The name of the role to be queried.
-        :type name: str
-        :return: The Role object matching the specified name, or None if not found.
-        :rtype: Role | None
-        """
-        return self.db.query(Role).filter_by(name=name).first()
-
     def create(self, name: str) -> RoleDTO:
         """
         Creates a new role with the specified name and persists it to the database. This
@@ -98,6 +83,8 @@ class RoleDAL:
         :return: A `RoleDTO` object representing the newly created role.
         :rtype: RoleDTO
         """
+        if not name:
+            raise ValueError("Le nom du rôle ne peut être vide.")
         role = Role(name=name)
         self.db.add(role)
         self.db.commit()
