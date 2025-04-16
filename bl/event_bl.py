@@ -69,6 +69,8 @@ class EventBL:
             raise PermissionError("Seuls les membres de l'équipe support peuvent voir leurs évènements.")
 
         user = self.collaborator_dal.get_by_email_raw(current_user["sub"])
+        if not user:
+            raise ValueError("Utilisateur introuvable.")
         return self.dal.get_by_support_id(user.id)
 
 

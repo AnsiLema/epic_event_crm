@@ -1,61 +1,70 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import Mock, patch
+
+import pytest
 from security.auth_service import authenticate_collaborator
 
 
-class FakeRole:
-    def __init__(self, name):
-        self.name = name
+def test_authenticate_collaborator_success():
+    mock_db = Mock()
 
+    mock_role = Mock()
+    mock_role.name = "Admin"
 
-class FakeUser:
-    def __init__(self, id, email, password, role_name):
-        self.id = id
-        self.email = email
-        self.password = password
-        self.role = FakeRole(role_name)
+    mock_user = Mock(
+        id=1,
+        name="Jean Test",
+        email="test@example.com",
+        password="hashed_password",
+        role=mock_role
+    )
 
+    mock_collaborator_dal = Mock()
+    mock_collaborator_dal.get_by_email_raw.return_value = mock_user
 
-def test_authenticate_success(monkeypatch):
-    fake_user = FakeUser(id=1, email="bob@example.com", password="hashedpw", role_name="commercial")
+    with patch("security.auth_service.CollaboratorDAL", return_value=mock_collaborator_dal), \
+         patch("security.auth_service.verify_password", return_value=True):
 
-    # Simulates DAL.get_by_email_raw()
-    dal_mock = MagicMock()
-    dal_mock.get_by_email_raw.return_value = fake_user
+        result = authenticate_collaborator(mock_db, "test@example.com", "plain_password")
 
-    db = MagicMock()
-    monkeypatch.setattr("security.auth_service.CollaboratorDAL", lambda db: dal_mock)
-
-    # Simulates hash checker (mock returns True)
-    with patch("security.auth_service.verify_password", return_value=True):
-        result = authenticate_collaborator(db, "bob@example.com", "correct_password")
         assert result == {
             "id": 1,
-            "email": "bob@example.com",
-            "role": "commercial"
+            "sub": "test@example.com",
+            "email": "test@example.com",
+            "role": "Admin"
         }
 
 
-def test_authenticate_wrong_password(monkeypatch):
-    fake_user = FakeUser(id=1, email="bob@example.com", password="hashedpw", role_name="commercial")
+def test_authenticate_collaborator_invalid_password():
+    mock_db = Mock()
+    mock_user = Mock(password="hashed_password")
+    mock_collaborator_dal = Mock()
+    mock_collaborator_dal.get_by_email_raw.return_value = mock_user
 
-    dal_mock = MagicMock()
-    dal_mock.get_by_email_raw.return_value = fake_user
+    with patch("security.auth_service.CollaboratorDAL", return_value=mock_collaborator_dal), \
+            patch("security.auth_service.verify_password", return_value=False):
+        result = authenticate_collaborator(mock_db, "test@example.com", "wrong_password")
 
-    db = MagicMock()
-    monkeypatch.setattr("security.auth_service.CollaboratorDAL", lambda db: dal_mock)
-
-    # Simulates a wrong password
-    with patch("security.auth_service.verify_password", return_value=False):
-        result = authenticate_collaborator(db, "bob@example.com", "wrong_password")
-        assert result is None
-
-
-def test_authenticate_user_not_found(monkeypatch):
-    dal_mock = MagicMock()
-    dal_mock.get_by_email_raw.return_value = None
-
-    db = MagicMock()
-    monkeypatch.setattr("security.auth_service.CollaboratorDAL", lambda db: dal_mock)
-
-    result = authenticate_collaborator(db, "unknown@example.com", "any")
     assert result is None
+
+
+def test_authenticate_collaborator_user_not_found():
+    mock_db = Mock()
+    mock_collaborator_dal = Mock()
+    mock_collaborator_dal.get_by_email_raw.return_value = None
+
+    with patch("security.auth_service.CollaboratorDAL", return_value=mock_collaborator_dal):
+        result = authenticate_collaborator(mock_db, "nonexistent@example.com", "any_password")
+
+    assert result is None
+
+
+def test_authenticate_collaborator_missing_role():
+    mock_db = Mock()
+    mock_user = Mock(id=2, name="Jean Test", email="user@example.com", password="hashed_password", role=None)
+    mock_collaborator_dal = Mock()
+    mock_collaborator_dal.get_by_email_raw.return_value = mock_user
+
+    with patch("security.auth_service.CollaboratorDAL", return_value=mock_collaborator_dal), \
+         patch("security.auth_service.verify_password", return_value=True):
+        with pytest.raises(AttributeError, match="'NoneType' object has no attribute 'name'"):
+            authenticate_collaborator(mock_db, "user@example.com", "correct_password")
