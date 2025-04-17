@@ -21,5 +21,6 @@ cli.add_command(client_cli)
 cli.add_command(contract_cli)
 cli.add_command(event_cli)
 
+
 if __name__ == "__main__":
     cli()
