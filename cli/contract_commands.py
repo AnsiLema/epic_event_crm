@@ -269,4 +269,3 @@ def show_contract_detail(contract_id, current_user):
     click.echo(f" - Statut          : {'✅ Signé' if contract.status else '❌ Non signé'}")
     click.echo(f"  - ID du client   : {contract.client_id}")
     click.echo(f"  - ID du commercial : {contract.commercial_id}")
-
