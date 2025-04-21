@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from dal.contract_dal import ContractDAL
 from security.permissions import can_manage_contracts, is_commercial
 from dtos.contract_dto import ContractDTO
+from sentry_sdk import capture_message, set_user
 
 
 class ContractBL:
@@ -26,7 +27,19 @@ class ContractBL:
             if contract.commercial_id != current_user["id"]:
                 raise PermissionError("Vous ne pouvez modifier que les contrats de vos clients.")
 
-        return self.dal.update_by_id(contract_id, updates)
+        # logging before update
+        status_before = contract.status
+        status_after = updates.get("status", status_before)
+
+        updated_contract = self.dal.update_by_id(contract_id, updates)
+
+        # If contract was signed
+        if not status_before and status_after:
+            set_user({"email": current_user["email"]})
+            capture_message(f"Contrat #{contract_id} signé par {current_user['email']}", level="info")
+
+        return updated_contract
+
 
     def get_contract(self, contract_id: int) -> ContractDTO:
         contract = self.dal.get(contract_id)

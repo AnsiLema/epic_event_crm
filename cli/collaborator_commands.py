@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy.orm import sessionmaker
 from bl.collaborator_bl import CollaboratorBL
 from cli.auth_decorator import with_auth_payload
@@ -55,6 +56,7 @@ def create_collaborator(name, email, password, role, current_user):
         )
         click.echo(f"Collaborateur créé : {collab.name} ({collab.email}) - Rôle : {collab.role_name}")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"ERREUR : {e}")
 
 @collaborator_cli.command("list")
@@ -89,6 +91,7 @@ def list_collaborator(current_user):
             click.echo(f" - {c.name} - {c.email} - rôle : {c.role_name}")
 
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 
 @collaborator_cli.command("update")
@@ -115,6 +118,7 @@ def update_collaborator(collaborator_id, current_user):
     try:
         collab = bl.get_by_id(collaborator_id)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
         return
 
@@ -135,6 +139,7 @@ def update_collaborator(collaborator_id, current_user):
         updated = bl.update_collaborator(collaborator_id, updates, current_user)
         click.echo(f"Collaborateur mis à jour : {updated.name} ({updated.email}) - rôle : {updated.role_name}")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur lors de la mise à jour : {e}")
 
 @collaborator_cli.command("delete")
@@ -159,6 +164,7 @@ def delete_collaborator(collaborator_id, current_user):
     try:
         collab = bl.get_by_id(collaborator_id)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
         return
 
@@ -171,4 +177,5 @@ def delete_collaborator(collaborator_id, current_user):
         bl.delete_collaborator(collaborator_id, current_user)
         click.echo("Collaborateur supprimé avec succès.")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur lors de la suppression : {e}")

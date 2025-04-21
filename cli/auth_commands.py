@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy.orm import sessionmaker
 from security.auth_service import authenticate_collaborator
 from security.jwt import create_access_token, decode_access_token
@@ -47,6 +48,7 @@ def login(email, password):
     try:
         save_token(token)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur lors de l'enregistrement du token : {e},", err=True)
         return
     click.echo(f"Connecté : {payload['email']} (rôle : {payload['role']})")

@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy.orm import sessionmaker
 from bl.client_bl import ClientBLL
 from cli.auth_decorator import with_auth_payload
@@ -28,6 +29,7 @@ def create_client(name, email, phone, company, current_user):
         )
         click.echo(f"Client créé : {client.name} ({client.email})")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 
 @client_cli.command("list")
@@ -59,6 +61,7 @@ def list_clients(current_user):
         for client in clients:
             click.echo(f"{client.name} - {client.email} | {client.company  or 'Non renseigné'}")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 
 @client_cli.command("update")
@@ -93,6 +96,7 @@ def update_client(client_id, name, email, phone, company, current_user):
     try:
         client = bl.get_client(client_id)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
         return
 
@@ -118,4 +122,5 @@ def update_client(client_id, name, email, phone, company, current_user):
         updated = bl.update_client(client_id, updates, current_user)
         click.echo(f"Client mis à jour : {updated.name} ({updated.email})")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")

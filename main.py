@@ -1,4 +1,5 @@
 import click
+from monitoring.sentry_logging import init_sentry
 from cli.auth_commands import auth_cli
 from cli.collaborator_commands import collaborator_cli
 from cli.contract_commands import contract_cli
@@ -6,6 +7,8 @@ from cli.client_commands import client_cli
 from cli.init_command import init_cli
 from cli.event_commands import event_cli
 
+
+init_sentry()
 
 @click.group()
 def cli():

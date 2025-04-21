@@ -5,7 +5,8 @@ from dal.role_dal import RoleDAL
 from security.permissions import can_manage_collaborators
 from dtos.collaborator_dto import CollaboratorDTO
 from security.password import hash_password
-
+import sentry_sdk
+from monitoring.sentry_logging import log_sentry
 
 class CollaboratorBL:
     def __init__(self, db: Session):
@@ -15,7 +16,13 @@ class CollaboratorBL:
     def create_collaborator(self, data: dict, current_user: dict) -> CollaboratorDTO:
         if not can_manage_collaborators(current_user):
             raise PermissionError("Vous n'avez pas le droit de créer un collaborateur")
-        return self.dal.create(data)
+
+        collab = self.dal.create(data)
+
+        # Logging sentry
+        log_sentry(f"Collaborateur créé : {collab.name} ({collab.email})", current_user)
+
+        return collab
 
     def create_collaborator_from_input(self,
                                        name: str,
@@ -48,7 +55,13 @@ class CollaboratorBL:
         }
 
         try:
-            return self.dal.create(collaborator_data)
+            collab = self.dal.create(collaborator_data)
+
+            # Logging sentry
+            log_sentry(f"Collaborateur créé : {collab.name} ({collab.email})", current_user)
+
+            return collab
+
         except IntegrityError:
             raise ValueError("Erreur: Cet email est déjà utilisé.")
         except Exception as e:
@@ -69,6 +82,10 @@ class CollaboratorBL:
         updated_collaborator = self.dal.update_by_id(collaborator_id, updates)
         if not updated_collaborator:
             raise ValueError("collaborateur introuvable")
+
+        log_sentry(f"Collaborateur modifié : "
+                   f"{updated_collaborator.name} (ID: {updated_collaborator.id})", current_user)
+
         return updated_collaborator
 
     def delete_collaborator(self, collaborator_id: int, current_user: dict) -> None:

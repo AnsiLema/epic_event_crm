@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy.orm import sessionmaker
 from bl.event_bl import EventBL
 from cli.auth_decorator import with_auth_payload
@@ -49,6 +50,7 @@ def create_event(current_user):
         click.echo(f"Évènement crée (ID #{event.id}) pour le contrat {event.contract_id}")
 
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 
 @event_cli.command("update")
@@ -78,6 +80,7 @@ def update_event(event_id, current_user):
     try:
         event = bl.get_event(event_id)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
         return
 
@@ -128,6 +131,7 @@ def update_event(event_id, current_user):
         updated = bl.update_event(event_id, updates, current_user)
         click.echo(f"Événement mis à jour (ID #{updated.id})")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 
 @event_cli.command("nosupport")
@@ -161,6 +165,7 @@ def list_events_without_support(current_user):
     except PermissionError as pe:
         click.echo(f"Accès refusé : {pe}")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 
 @event_cli.command("myevents")
@@ -196,6 +201,7 @@ def list_my_events(current_user):
     except PermissionError as pe:
         click.echo(f"Accès refusé : {pe}")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 
 @event_cli.command("list")
@@ -229,5 +235,6 @@ def list_all_events(current_user):
             )
 
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 

@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy.orm import sessionmaker
 from db.session import SessionLocal
 from bl.role_bl import RoleBL
@@ -53,6 +54,7 @@ def init_all():
           click.echo("Un administrateur existe déjà.")
 
   except Exception as e:
+      sentry_sdk.capture_exception(e)
       click.echo(f"Erreur lors de l'initialisation : {e}")
   finally:
       db.close()

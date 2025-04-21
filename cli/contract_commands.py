@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy.orm import sessionmaker
 from bl.contract_bl import ContractBL
 from cli.auth_decorator import with_auth_payload
@@ -260,6 +261,7 @@ def show_contract_detail(contract_id, current_user):
     try:
         contract = bl.get_contract(contract_id)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
         return
 
