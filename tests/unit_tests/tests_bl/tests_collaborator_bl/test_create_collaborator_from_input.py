@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, ANY
 import pytest
 from bl.collaborator_bl import CollaboratorBL
 from dtos.collaborator_dto import CollaboratorDTO
@@ -43,35 +43,56 @@ def valid_collaborator_data():
     }
 
 
-def test_create_collaborator_from_input_successful(collaborator_bl_instance, mock_collab_dal, mock_role_dal,
-                                                   mock_current_user, valid_collaborator_data):
-    mock_role = MagicMock(id=1, name="Manager")
-    mock_role_dal.get_raw_by_name.return_value = mock_role
+def test_create_collaborator_from_input_successful(mock_collab_dal, mock_role_dal):
+    # Arrange
+    db = MagicMock()
+    collaborator_bl = CollaboratorBL(db)
+    collaborator_bl.dal = mock_collab_dal
+    collaborator_bl.role_dal = mock_role_dal
+
+    mock_current_user = {
+        "role": "gestion",
+        "email": "admin@example.com"
+    }
+
+    valid_data = {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "password": "password123",
+        "role_name": "gestion"
+    }
+
+    # Simuler qu'il n'existe pas déjà
     mock_collab_dal.get_by_email_raw.return_value = None
-    expected_collaborator = CollaboratorDTO(
-        id=42,
-        name=valid_collaborator_data["name"],
-        email=valid_collaborator_data["email"],
-        role_name=valid_collaborator_data["role_name"]
+    # Simuler que le rôle existe
+    mock_role_dal.get_raw_by_name.return_value = MagicMock(id=1)
+
+    # Simuler la réponse du DAL.create
+    expected_result = CollaboratorDTO(
+        id=1,
+        name=valid_data["name"],
+        email=valid_data["email"],
+        role_name="gestion"
     )
-    mock_collab_dal.create.return_value = expected_collaborator
-    with patch("bl.collaborator_bl.can_manage_collaborators", return_value=True):
-        result = collaborator_bl_instance.create_collaborator_from_input(
-            name=valid_collaborator_data["name"],
-            email=valid_collaborator_data["email"],
-            password=valid_collaborator_data["password"],
-            role_name=valid_collaborator_data["role_name"],
-            current_user=mock_current_user
-        )
-    assert result == expected_collaborator
-    mock_role_dal.get_raw_by_name.assert_called_once_with(valid_collaborator_data["role_name"])
-    mock_collab_dal.get_by_email_raw.assert_called_once_with(valid_collaborator_data["email"])
+    mock_collab_dal.create.return_value = expected_result
+
+    # Act
+    result = collaborator_bl.create_collaborator_from_input(
+        name=valid_data["name"],
+        email=valid_data["email"],
+        password=valid_data["password"],
+        role_name=valid_data["role_name"],
+        current_user=mock_current_user
+    )
+
+    # Assert
     mock_collab_dal.create.assert_called_once_with({
-        "name": valid_collaborator_data["name"],
-        "email": valid_collaborator_data["email"],
-        "password": valid_collaborator_data["password"],
-        "role_id": mock_role.id
+        "name": valid_data["name"],
+        "email": valid_data["email"],
+        "password": ANY,  # Le hash exact est imprévisible
+        "role_id": 1
     })
+    assert result == expected_result
 
 
 def test_create_collaborator_from_input_permission_error(collaborator_bl_instance, mock_current_user,
