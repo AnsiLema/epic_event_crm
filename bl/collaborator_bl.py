@@ -4,6 +4,7 @@ from dal.collaborator_dal import CollaboratorDAL
 from dal.role_dal import RoleDAL
 from security.permissions import can_manage_collaborators
 from dtos.collaborator_dto import CollaboratorDTO
+from security.password import hash_password
 
 
 class CollaboratorBL:
@@ -42,7 +43,7 @@ class CollaboratorBL:
         collaborator_data = {
             "name": name,
             "email": email,
-            "password": password,
+            "password": hash_password(password),
             "role_id": role.id
         }
 

@@ -71,7 +71,7 @@ class RoleDAL:
         role = self.db.query(Role).filter_by(name=name).first()
         return self._to_dto(role) if role else None
 
-    def create(self, name: str) -> RoleDTO:
+    def create_role(self, name: str) -> RoleDTO:
         """
         Creates a new role with the specified name and persists it to the database. This
         method initializes a `Role` object, adds it to the database session, commits the

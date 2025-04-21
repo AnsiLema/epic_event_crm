@@ -14,13 +14,13 @@ _outer_cb = cc.create_event.callback
 _inner_cb = _outer_cb.__wrapped__
 
 def _bypass_auth(*args, **kwargs):
-    # injects a dummy current_user
+    # injects a dummy curent user
     return _inner_cb(current_user={"id": 1, "role": "admin"})
 
 cc.create_event.callback = _bypass_auth
 
 
-# Fixtures communes
+# Fixtures
 
 @pytest.fixture
 def runner():

@@ -1,55 +1,60 @@
 import click
 from sqlalchemy.orm import sessionmaker
-from db.session import engine
-from models.role import Role
-from models.collaborator import Collaborator
+from db.session import SessionLocal
+from bl.role_bl import RoleBL
+from bl.collaborator_bl import CollaboratorBL
 from security.password import hash_password
 
+
 init_cli = click.Group("init")
-Session = sessionmaker(bind=engine)
 
-@init_cli.command("all")
+@click.command("all")
 def init_all():
-    """
-    This function initializes the database with predefined roles and a default admin user if they
-    do not already exist. Specifically, it creates roles "gestion", "commercial", and "support",
-    and an admin user with the "gestion" role using a pre-defined password.
+  db = SessionLocal()
+  try:
+      role_bl = RoleBL(db)
+      collaborator_bl = CollaboratorBL(db)
 
-    :raises RuntimeError: If the "gestion" role cannot be found when creating the admin user.
+      # Creation of roles if non-existing
+      created_roles = []
+      for role in ["gestion", "commercial", "support"]:
+          try:
+              role_bl.create_role(role)
+              created_roles.append(role)
+          except ValueError:
+              continue # Role already exists
 
-    :returns: None
-    """
-    db = Session()
+      if created_roles:
+          click.echo(f"Rôles crées : {', '.join(created_roles)}")
+      else:
+          click.echo("Les rôles existent déjà.")
 
-    # Creates roles when not existing
-    existing_roles = Session().query(Role).all()
-    if not existing_roles:
-        for role_name in ["gestion", "commercial", "support"]:
-            db.add(Role(name=role_name))
-        db.commit()
-        click.echo("Rôles créés.")
-    else:
-        click.echo("Les rôles existent déjà.")
+      # Creation of admin if non-existing
+      admin_email = "admin@epicevents.fr"
+      existing_admin = collaborator_bl.dal.get_by_email_raw(admin_email)
 
-    # Creates a first admin user with a management role if non existant
-    admin_email = "admin@epicevents.fr"
-    existing_admin = Session().query(Collaborator).filter_by(email=admin_email).first()
+      if not existing_admin:
+          password = click.prompt("Mot de passe de l'administrateur", hide_input=True, confirmation_prompt=True)
+          hashed_pw = hash_password(password)
 
-    if not existing_admin:
-        gestion_role = db.query(Role).filter_by(name="gestion").first()
-        if not gestion_role:
-            click.echo("Rôle 'gestion' introuvable.")
-            return
+          gestion_role = role_bl.get_gestion_role()
+          if not gestion_role:
+              click.echo("Rôle 'gestion' introuvable. Initialisation interrompue.")
+              return
 
-        password = hash_password("admin123")
-        admin_user = Collaborator(
-            name="Admin",
-            email=admin_email,
-            password=password,
-            role_id=gestion_role.id
-        )
-        db.add(admin_user)
-        db.commit()
-        click.echo("Admin créé : {admin_email} / admin123")
-    else:
-        click.echo("Un admin existe déjà.")
+          collaborator_bl.create_collaborator({
+              "name": "Admin",
+              "email": admin_email,
+              "password": hashed_pw,
+              "role_id": gestion_role.id
+          })
+          click.echo("Admin créé : admin@epicevents.fr")
+      else:
+          click.echo("Un administrateur existe déjà.")
+
+  except Exception as e:
+      click.echo(f"Erreur lors de l'initialisation : {e}")
+  finally:
+      db.close()
+
+init_cli.add_command(init_all)

@@ -26,7 +26,7 @@ def test_create_role_success(role_dal, db_session_mock):
     role_dal._to_dto = MagicMock(return_value=RoleDTO(id=1, name=role_name))
 
     # Act
-    result = role_dal.create(name=role_name)
+    result = role_dal.create_role(name=role_name)
 
     # Assert
     db_session_mock.add.assert_called_once()
@@ -49,25 +49,15 @@ def test_create_role_invalid_name(role_dal, db_session_mock):
 
     # Act & Assert
     with pytest.raises(Exception, match="Integrity Error"):
-        role_dal.create(name="invalid")
+        role_dal.create_role(name="invalid")
 
     db_session_mock.add.assert_called_once()
     db_session_mock.commit.assert_called_once()
 
 
 def test_create_role_empty_name(role_dal, db_session_mock):
-    with pytest.raises(ValueError, match="Role name cannot be empty"):
-        role_dal.create(name="")
-
-    db_session_mock.add.assert_not_called()
-    db_session_mock.commit.assert_not_called()
-
-
-def test_create_role_empty_name(role_dal, db_session_mock):
-    empty_role_name = ""
-
     with pytest.raises(ValueError, match="Le nom du rôle ne peut être vide."):
-        role_dal.create(name=empty_role_name)
+        role_dal.create_role(name="")
 
     db_session_mock.add.assert_not_called()
     db_session_mock.commit.assert_not_called()
