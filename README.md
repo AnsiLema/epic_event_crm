@@ -184,3 +184,7 @@ Les actions suivantes sont journalisées :
 - Exceptions inattendues
 - Création et modification de collaborateurs
 - Signature d'un contrat
+
+
+## Auteur
+Créé par A'nsi (ansilema@gmail.com)
