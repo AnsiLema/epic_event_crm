@@ -165,9 +165,22 @@ python main.py contract list
 | python main.py contract unsigned    | commercial  (sur ses contrats)          | Lister les contrats non-payés     |
 
 
+## Gestion des évènements
+
+
+| Commande                              | Rôle requis                  | Description                                |
+|---------------------------------------|------------------------------|--------------------------------------------|
+| python main.py event create           | commercial                   | Créer un nouveau évènement (contrat signé) |
+| python main.py event list             | Tous                         | Lister tous les évènement                  |
+| python main.py event update <id>      | support / gestion            | Mettre à jour un évènement selon le rôle   |
+| python main.py event update nosupport | gestion                      | Lister les évènements sans support         |
+| python main.py event update myevents  | support (sur ses évènements) | Lister les évènements assignés au support  |
+
+
+
 ## Journalisation avec Sentry
 
 Les actions suivantes sont journalisées :
-- exceptions inattendues
+- Exceptions inattendues
 - Création et modification de collaborateurs
 - Signature d'un contrat
