@@ -1,6 +1,8 @@
 # 📊 Epic Events CRM
 
-Epic Events CRM est une application en ligne de commande (CLI) conçue pour permettre à l'entreprise Epic Events de gérer ses clients, contrats, événements et collaborateurs, tout en respectant les règles de sécurité et les rôles de chaque utilisateur.
+Epic Events CRM est une application en ligne de commande (CLI) conçue pour permettre à l'entreprise Epic Events de 
+gérer ses clients, contrats, événements et collaborateurs, tout en respectant les règles de sécurité et les rôles 
+de chaque utilisateur.
 
 ##  Fonctionnalités principales
 

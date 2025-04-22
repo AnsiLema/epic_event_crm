@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, CheckConstraint
 from sqlalchemy.orm import relationship
 from .base import Base
 
+
 class Role(Base):
     __tablename__ = "roles"
 

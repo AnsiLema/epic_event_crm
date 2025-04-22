@@ -31,4 +31,3 @@ class RoleBL:
         if existing:
             raise ValueError(f"Le role {name} existe déja.")
         return self.dal.create_role(name)
-

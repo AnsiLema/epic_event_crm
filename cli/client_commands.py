@@ -9,6 +9,7 @@ from db.session import engine
 client_cli = click.Group("client")
 Session = sessionmaker(bind=engine)
 
+
 @client_cli.command("create")
 @click.option("--name", prompt="Entrez le nom du client", help="Nom du client")
 @click.option("--email", prompt="Entrez l'email du client", help="Email du client")
@@ -31,6 +32,7 @@ def create_client(name, email, phone, company, current_user):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
+
 
 @client_cli.command("list")
 @with_auth_payload
@@ -57,12 +59,12 @@ def list_clients(current_user):
         if not clients:
             click.echo("Aucun client trouvé.")
             return
-
         for client in clients:
-            click.echo(f"{client.name} - {client.email} | {client.company  or 'Non renseigné'}")
+            click.echo(f"{client.name} - {client.email} | {client.company or 'Non renseigné'}")
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
+
 
 @client_cli.command("update")
 @click.argument("client_id", type=int)

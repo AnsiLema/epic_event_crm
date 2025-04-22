@@ -11,4 +11,3 @@ class ContractDTO:
     status: bool
     client_id: int
     commercial_id: int
-

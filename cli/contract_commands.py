@@ -10,6 +10,7 @@ from datetime import date
 contract_cli = click.Group("contract")
 Session = sessionmaker(bind=engine)
 
+
 @contract_cli.command("list")
 @click.option("--full", is_flag=True, help="Afficher plus de détails sur les contrats")
 @with_auth_payload
@@ -48,6 +49,7 @@ def list_contracts(full, current_user):
     except Exception as e:
         click.echo(f"Erreur : {e}")
 
+
 @contract_cli.command("signed")
 @with_auth_payload
 def list_signed_contracts(current_user):
@@ -72,6 +74,7 @@ def list_signed_contracts(current_user):
                        f" Date de création : {c.creation_date}")
     except Exception as e:
         click.echo(f"Erreur : {e}")
+
 
 @contract_cli.command("unpaid")
 @with_auth_payload
@@ -106,6 +109,7 @@ def list_unpaid_contracts(current_user):
     except Exception as e:
         click.echo(f"Erreur : {e}")
 
+
 @contract_cli.command("unsigned")
 @with_auth_payload
 def list_unsigned_contracts(current_user):
@@ -136,6 +140,7 @@ def list_unsigned_contracts(current_user):
                        f" Date de création : {c.creation_date}")
     except Exception as e:
         click.echo(f"Erreur : {e}")
+
 
 @contract_cli.command("create")
 @click.option("--client-id", type=int,
@@ -185,6 +190,7 @@ def create_contract(client_id, commercial_id, total_amount, amount_left, current
     except Exception as e:
         click.echo(f"Erreur : {e}")
 
+
 @contract_cli.command("update")
 @click.argument("contract_id", type=int)
 @with_auth_payload
@@ -206,7 +212,7 @@ def update_contract(contract_id, current_user):
     db = Session()
     bl = ContractBL(db)
 
-    click.echo(f"Payload reçu : {current_user}") # DEBUG temporaire
+    click.echo(f"Payload reçu : {current_user}")  # DEBUG temporaire
 
     try:
         contract = bl.get_contract(contract_id)
@@ -238,6 +244,7 @@ def update_contract(contract_id, current_user):
 
     except Exception as e:
         click.echo(f"Erreur pendant la mis à jour: {e}")
+
 
 @contract_cli.command("show")
 @click.argument("contract_id", type=int)

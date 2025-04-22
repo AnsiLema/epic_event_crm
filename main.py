@@ -10,12 +10,14 @@ from cli.event_commands import event_cli
 
 init_sentry()
 
+
 @click.group()
 def cli():
     """
     CLI for Epic Events CRM
     """
     pass
+
 
 cli.add_command(init_cli)
 cli.add_command(auth_cli)

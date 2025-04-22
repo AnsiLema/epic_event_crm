@@ -46,7 +46,7 @@ class EventBL:
         if not event:
             raise ValueError("Évènement introuvable.")
 
-        #Management can modify all events
+        # Management can modify all events
         if can_manage_events(current_user):
             return self.dal.update_by_id(event_id, updates)
 
@@ -72,6 +72,3 @@ class EventBL:
         if not user:
             raise ValueError("Utilisateur introuvable.")
         return self.dal.get_by_support_id(user.id)
-
-
-

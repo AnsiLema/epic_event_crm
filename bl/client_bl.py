@@ -36,7 +36,7 @@ class ClientBLL:
             raise ValueError("Le nom et l'email sont requis.")
 
         if self.dal.get_by_email(email):
-            raise ValueError ("Un client avec cet email existe déjà.")
+            raise ValueError("Un client avec cet email existe déjà.")
 
         commercial = self.collaborator_dal.get_by_email_raw(current_user["sub"])
         if not commercial:

@@ -19,6 +19,7 @@ def has_permission(payload: dict, allowed_role: list[str]) -> bool:
 
     return user_role in allowed_role
 
+
 def can_manage_collaborators(payload: dict) -> bool:
     """
     Determines whether a user has the permission to manage collaborators.
@@ -42,6 +43,7 @@ def can_manage_collaborators(payload: dict) -> bool:
 
     return has_permission(payload, ["gestion"])
 
+
 def can_manage_contracts(payload: dict) -> bool:
     """
     Determines if the user has the required permissions to manage contracts. This function
@@ -61,6 +63,7 @@ def can_manage_contracts(payload: dict) -> bool:
         return False
 
     return has_permission(payload, ["gestion", "commercial"])
+
 
 def can_manage_events(payload: dict) -> bool:
     """
@@ -84,6 +87,7 @@ def can_manage_events(payload: dict) -> bool:
         return False
 
     return has_permission(payload, ["gestion", "support"])
+
 
 def can_manage_own_clients(payload: dict) -> bool:
     """
@@ -109,6 +113,7 @@ def can_manage_own_clients(payload: dict) -> bool:
 
     return has_permission(payload, ["commercial"])
 
+
 def is_commercial(payload: dict) -> bool:
     """
     Determines whether the provided payload indicates a commercial role.
@@ -126,6 +131,7 @@ def is_commercial(payload: dict) -> bool:
     if not isinstance(payload, dict):
         raise TypeError("Le payload doit être un dictionnaire.")
     return payload.get("role") == "commercial"
+
 
 def is_support(payload: dict) -> bool:
     """

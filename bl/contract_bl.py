@@ -40,7 +40,6 @@ class ContractBL:
 
         return updated_contract
 
-
     def get_contract(self, contract_id: int) -> ContractDTO:
         contract = self.dal.get(contract_id)
         if not contract:
@@ -64,4 +63,3 @@ class ContractBL:
 
     def list_all_contracts(self) -> list[ContractDTO]:
         return self.dal.get_all()
-

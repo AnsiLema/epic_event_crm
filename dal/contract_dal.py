@@ -54,4 +54,3 @@ class ContractDAL:
     def get_all(self) -> list[ContractDTO]:
         contracts = self.db.query(Contract).all()
         return [self._to_dto(c) for c in contracts]
-

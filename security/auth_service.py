@@ -1,6 +1,7 @@
 from dal.collaborator_dal import CollaboratorDAL
 from security.password import verify_password
 
+
 def authenticate_collaborator(db, email: str, password: str) -> dict | None:
     """
     Authenticates a collaborator by verifying the provided email and password.

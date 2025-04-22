@@ -9,6 +9,7 @@ from security.permissions import can_manage_collaborators
 collaborator_cli = click.Group("collaborator")
 Session = sessionmaker(bind=engine)
 
+
 @collaborator_cli.command("create")
 @click.option("--name", prompt="Entrez le nom du collaborateur", help="Nom du collaborateur")
 @click.option("--email", prompt="Entrez l'email du collaborateur", help="Email du collaborateur")
@@ -17,8 +18,7 @@ Session = sessionmaker(bind=engine)
               help="Mot de passe du collaborateur")
 @click.option("--role",
               type=click.Choice(["gestion", "support", "commercial"]),
-              prompt="Rôle"
-)
+              prompt="Rôle")
 @with_auth_payload
 def create_collaborator(name, email, password, role, current_user):
     """
@@ -59,6 +59,7 @@ def create_collaborator(name, email, password, role, current_user):
         sentry_sdk.capture_exception(e)
         click.echo(f"ERREUR : {e}")
 
+
 @collaborator_cli.command("list")
 @with_auth_payload
 def list_collaborator(current_user):
@@ -93,6 +94,7 @@ def list_collaborator(current_user):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
+
 
 @collaborator_cli.command("update")
 @click.argument("collaborator_id", type=int)
@@ -141,6 +143,7 @@ def update_collaborator(collaborator_id, current_user):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur lors de la mise à jour : {e}")
+
 
 @collaborator_cli.command("delete")
 @click.argument("collaborator_id", type=int)

@@ -5,8 +5,8 @@ from dal.role_dal import RoleDAL
 from security.permissions import can_manage_collaborators
 from dtos.collaborator_dto import CollaboratorDTO
 from security.password import hash_password
-import sentry_sdk
 from monitoring.sentry_logging import log_sentry
+
 
 class CollaboratorBL:
     def __init__(self, db: Session):
@@ -24,12 +24,13 @@ class CollaboratorBL:
 
         return collab
 
-    def create_collaborator_from_input(self,
-                                       name: str,
-                                        email: str,
-                                        password: str,
-                                        role_name: str,
-                                        current_user: dict) -> CollaboratorDTO:
+    def create_collaborator_from_input(
+            self,
+            name: str,
+            email: str,
+            password: str,
+            role_name: str,
+            current_user: dict) -> CollaboratorDTO:
         if not can_manage_collaborators(current_user):
             raise PermissionError("Vous n'avez pas le droit de créer un collaborateur")
 
@@ -45,7 +46,6 @@ class CollaboratorBL:
         role = self.role_dal.get_raw_by_name(role_name)
         if not role:
             raise ValueError(f"Le role '{role_name}' n'existe pas.")
-
 
         collaborator_data = {
             "name": name,

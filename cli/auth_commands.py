@@ -10,6 +10,7 @@ from db.session import engine
 auth_cli = click.Group("auth")
 Session = sessionmaker(bind=engine)
 
+
 def require_auth() -> dict:
     """Loads user's payload from token CLI."""
     token = load_token()
@@ -19,6 +20,7 @@ def require_auth() -> dict:
     if not payload:
         raise click.ClickException("Token Invalide ou expiré.")
     return payload
+
 
 @auth_cli.command("login")
 @click.option("--email", prompt="Email", help="Votre adresse email")
@@ -53,6 +55,7 @@ def login(email, password):
         return
     click.echo(f"Connecté : {payload['email']} (rôle : {payload['role']})")
 
+
 @auth_cli.command("logout")
 def logout():
     """
@@ -69,6 +72,7 @@ def logout():
     except FileNotFoundError:
         return
     click.echo("Déconnecté avec succès.")
+
 
 @auth_cli.command("whoami")
 def whoami():

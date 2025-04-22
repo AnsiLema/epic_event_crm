@@ -3,6 +3,7 @@ from functools import wraps
 from security.token_store import load_token
 from security.jwt import decode_access_token
 
+
 def with_auth_payload(f):
     @wraps(f)
     def wrapper(*args, **kwargs):

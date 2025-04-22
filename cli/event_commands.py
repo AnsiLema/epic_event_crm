@@ -9,6 +9,7 @@ from datetime import datetime
 event_cli = click.Group("event")
 Session = sessionmaker(bind=engine)
 
+
 @event_cli.command("create")
 @with_auth_payload
 def create_event(current_user):
@@ -52,6 +53,7 @@ def create_event(current_user):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
+
 
 @event_cli.command("update")
 @click.argument("event_id", type=int)
@@ -115,8 +117,9 @@ def update_event(event_id, current_user):
 
     elif role == "management":
         if click.confirm("Modifier le collaborateur support ?", default=False):
-            new_support_id = click.prompt("ID du nouveau support (laisser vide pour désassigner)",
-                                      default="", show_default=False, type=int)
+            new_support_id = click.prompt(
+                "ID du nouveau support (laisser vide pour désassigner)",
+                default="", show_default=False, type=int)
             updates["support_id"] = int(new_support_id) if new_support_id else None
 
     else:
@@ -133,6 +136,7 @@ def update_event(event_id, current_user):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
+
 
 @event_cli.command("nosupport")
 @with_auth_payload
@@ -167,6 +171,7 @@ def list_events_without_support(current_user):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
+
 
 @event_cli.command("myevents")
 @with_auth_payload
@@ -204,6 +209,7 @@ def list_my_events(current_user):
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
 
+
 @event_cli.command("list")
 @with_auth_payload
 def list_all_events(current_user):
@@ -237,4 +243,3 @@ def list_all_events(current_user):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")
-
