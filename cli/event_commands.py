@@ -115,7 +115,7 @@ def update_event(event_id, current_user):
         if click.confirm("Modifier la note ?", default=False):
             updates["note"] = click.prompt("Nouvelle note (optionnel)", default="", show_default=False)
 
-    elif role == "management":
+    elif role == "gestion":
         if click.confirm("Modifier le collaborateur support ?", default=False):
             new_support_id = click.prompt(
                 "ID du nouveau support (laisser vide pour désassigner)",

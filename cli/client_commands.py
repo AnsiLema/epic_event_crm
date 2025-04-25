@@ -60,7 +60,7 @@ def list_clients(current_user):
             click.echo("Aucun client trouvé.")
             return
         for client in clients:
-            click.echo(f"{client.name} - {client.email} | {client.company or 'Non renseigné'}")
+            click.echo(f"{client.name} - {client.email} | {client.company or 'Non renseigné'} | Id : {client.id}")
     except Exception as e:
         sentry_sdk.capture_exception(e)
         click.echo(f"Erreur : {e}")

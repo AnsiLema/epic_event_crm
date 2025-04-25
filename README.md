@@ -170,13 +170,13 @@ python main.py contract list
 ## Gestion des évènements
 
 
-| Commande                              | Rôle requis                  | Description                                |
-|---------------------------------------|------------------------------|--------------------------------------------|
-| python main.py event create           | commercial                   | Créer un nouveau évènement (contrat signé) |
-| python main.py event list             | Tous                         | Lister tous les évènement                  |
-| python main.py event update <id>      | support / gestion            | Mettre à jour un évènement selon le rôle   |
-| python main.py event update nosupport | gestion                      | Lister les évènements sans support         |
-| python main.py event update myevents  | support (sur ses évènements) | Lister les évènements assignés au support  |
+| Commande                      | Rôle requis                  | Description                                |
+|-------------------------------|------------------------------|--------------------------------------------|
+| python main.py event create   | commercial                   | Créer un nouveau évènement (contrat signé) |
+| python main.py event list     | Tous                         | Lister tous les évènement                  |
+| python main.py event update <id> | support / gestion            | Mettre à jour un évènement selon le rôle   |
+| python main.py event nosupport | gestion                      | Lister les évènements sans support         |
+| python main.py event myevents | support (sur ses évènements) | Lister les évènements assignés au support  |
 
 
 

@@ -171,9 +171,9 @@ def test_management_modify_support(runner, bl_mock):
     bl_mock.get_event.return_value = evt
     bl_mock.update_event.return_value = SimpleNamespace(id=30)
 
-    # We replace the callback to force the 'management' role
+    # We replace the callback to force the 'gestion' role
     def bypass_mgmt(event_id, *args, **kwargs):
-        return _inner_fn(event_id, current_user={"id": 1, "role": "management"})
+        return _inner_fn(event_id, current_user={"id": 1, "role": "gestion"})
     cc.update_event.callback = bypass_mgmt
 
     # Act: confirm the modification of the support, then enter "5"
@@ -189,7 +189,7 @@ def test_management_modify_support(runner, bl_mock):
     updates = args[1]
     assert updates == {"support_id": 5}
     user_arg = args[2]
-    assert user_arg["role"] == "management"
+    assert user_arg["role"] == "gestion"
 
 def test_management_no_modification(runner, bl_mock):
     """
@@ -215,7 +215,7 @@ def test_management_no_modification(runner, bl_mock):
     bl_mock.get_event.return_value = evt
 
     def bypass_mgmt(event_id, *args, **kwargs):
-        return _inner_fn(event_id, current_user={"id": 1, "role": "management"})
+        return _inner_fn(event_id, current_user={"id": 1, "role": "gestion"})
     cc.update_event.callback = bypass_mgmt
 
     with patch("cli.event_commands.click.confirm", return_value=False):

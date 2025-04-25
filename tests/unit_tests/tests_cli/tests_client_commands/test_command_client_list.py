@@ -15,8 +15,8 @@ def token_patches():
 
 
 def test_list_clients_success(token_patches):
-    client1 = SimpleNamespace(name="Client One", email="client1@example.com", company="Company A")
-    client2 = SimpleNamespace(name="Client Two", email="client2@example.com", company=None)
+    client1 = SimpleNamespace(id=1, name="Client One", email="client1@example.com", company="Company A")
+    client2 = SimpleNamespace(id=2, name="Client Two", email="client2@example.com", company=None)
 
     with patch("cli.client_commands.Session"), \
          patch("cli.client_commands.ClientBLL") as mock_bll, \
@@ -26,8 +26,8 @@ def test_list_clients_success(token_patches):
 
         list_clients.callback()
 
-        mock_echo.assert_any_call("Client One - client1@example.com | Company A")
-        mock_echo.assert_any_call("Client Two - client2@example.com | Non renseigné")
+        mock_echo.assert_any_call("Client One - client1@example.com | Company A | Id : 1")
+        mock_echo.assert_any_call("Client Two - client2@example.com | Non renseigné | Id : 2")
         assert mock_echo.call_count == 2
 
 

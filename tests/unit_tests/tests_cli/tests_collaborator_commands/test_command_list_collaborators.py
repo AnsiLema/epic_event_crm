@@ -53,8 +53,8 @@ def deny_rights():
 # ------------------------------------------------------------------
 def test_list_success(runner, patch_bl, allow_rights):
     patch_bl.get_all_collaborators.return_value = [
-        SimpleNamespace(name="Jane", email="jane@corp.io", role_name="gestion"),
-        SimpleNamespace(name="John", email="john@corp.io", role_name="support"),
+        SimpleNamespace(id=1, name="Jane", email="jane@corp.io", role_name="gestion"),
+        SimpleNamespace(id=2, name="John", email="john@corp.io", role_name="support"),
     ]
 
     res = runner.invoke(cc.list_collaborator)

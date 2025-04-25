@@ -89,7 +89,7 @@ def list_collaborator(current_user):
 
         click.echo("Collaborateurs : ")
         for c in collaborators:
-            click.echo(f" - {c.name} - {c.email} - rôle : {c.role_name}")
+            click.echo(f" - {c.name} - {c.email} - rôle : {c.role_name} - ID : {c.id}")
 
     except Exception as e:
         sentry_sdk.capture_exception(e)
