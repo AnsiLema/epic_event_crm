@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from bl.client_bl import ClientBLL
 from cli.auth_decorator import with_auth_payload
 from db.session import engine
-
+from datetime import date
 
 client_cli = click.Group("client")
 Session = sessionmaker(bind=engine)
@@ -118,6 +118,7 @@ def update_client(client_id, name, email, phone, company, current_user):
         "email": email,
         "phone": phone,
         "company": company,
+        "last_contact_date": date.today()
     }
 
     try:
